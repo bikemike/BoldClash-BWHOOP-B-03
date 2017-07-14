@@ -6,8 +6,8 @@
 
 // rate in deg/sec
 // for acro mode
-#define MAX_RATE 360.0
-#define MAX_RATEYAW 360.0
+#define MAX_RATE 720.0
+#define MAX_RATEYAW 540.0
 
 // max angle for level mode
 #define MAX_ANGLE_HI 70.0f
@@ -21,7 +21,7 @@
 // also comment out DISABLE_EXPO to use
 // -1 to 1 , 0 = no exp
 // positive = less sensitive near center 
-#define EXPO_XY 0.3
+#define EXPO_XY 0.6
 #define EXPO_YAW 0.0
 
 
@@ -116,7 +116,7 @@
 // rates / expert mode
 #define RATES CH_EXPERT
 
-#define LEVELMODE CH_AUX1
+#define LEVELMODE DEVO_CHAN_7
 
 #define STARTFLIP CH_OFF
 
@@ -180,8 +180,8 @@
 // select only one
 //#define RX_CG023_PROTOCOL
 //#define RX_H7_PROTOCOL
-//#define RX_BAYANG_PROTOCOL
-#define RX_BAYANG_PROTOCOL_TELEMETRY
+#define RX_BAYANG_PROTOCOL
+//#define RX_BAYANG_PROTOCOL_TELEMETRY
 //#define RX_BAYANG_PROTOCOL_BLE_BEACON
 //#define RX_BAYANG_BLE_APP
 //#define RX_CX10BLUE_PROTOCOL
@@ -262,7 +262,7 @@
 // enable motors if pitch / roll controls off center (at zero throttle)
 // possible values: 0 / 1
 // use in acro build only
-#define ENABLESTIX 0
+#define ENABLESTIX 1
 #define ENABLESTIX_TRESHOLD 0.3
 #define ENABLESTIX_TIMEOUT 1e6
 

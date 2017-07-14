@@ -35,10 +35,10 @@
 #define LED_NUMBER 2
 
 #define LED1PIN GPIO_Pin_2
-#define LED1PORT GPIOA
+#define LED1PORT GPIOB
 
-#define LED2PIN GPIO_Pin_3
-#define LED2PORT GPIOA
+#define LED2PIN GPIO_Pin_1
+#define LED2PORT GPIOB
 
 
 
@@ -54,14 +54,14 @@
 // i2c driver to use ( dummy - disables i2c )
 // hardware i2c used PB6 and 7 by default ( can also use PA9 and 10)
 
-//#define USE_HARDWARE_I2C
-#define USE_SOFTWARE_I2C
+#define USE_HARDWARE_I2C
+//#define USE_SOFTWARE_I2C
 //#define USE_DUMMY_I2C
 
 // I2C speed: fast = no delays 
 // slow1 = for i2c without pull-up resistors
 // slow2 = i2c failsafe speed
-#define SOFTI2C_SPEED_FAST
+//#define SOFTI2C_SPEED_FAST
 //#define SOFTI2C_SPEED_SLOW1
 //#define SOFTI2C_SPEED_SLOW2
 
@@ -74,7 +74,7 @@
 // pins for hw i2c , select one only
 // select pins PB6 and PB7 OR select pins PA9 and PA10
 //#define HW_I2C_PINS_PB67
-#define HW_I2C_PINS_PA910
+#define HW_I2C_PINS_PA67
 
 #define SOFTI2C_SDAPIN GPIO_Pin_10
 #define SOFTI2C_SDAPORT GPIOA
@@ -112,11 +112,17 @@
 // disable lvc functions
 //#define DISABLE_LVC
 
+// VREG PIN
+#define ENABLE_VREG_PIN
+#define VREG_PORT_1   GPIOA
+#define VREG_PIN_1    GPIO_Pin_5
+
+
 // Analog battery input pin and adc channel
 
-#define BATTERYPIN GPIO_Pin_5
+#define BATTERYPIN GPIO_Pin_7
 #define BATTERYPORT GPIOA
-#define BATTERY_ADC_CHANNEL ADC_Channel_5
+#define BATTERY_ADC_CHANNEL ADC_Channel_7
 
 // default for 1/2 divider
 // change this factor to get a correct battery voltage
@@ -128,29 +134,29 @@
 // MOSI , CLK , SS - outputs , MISO input
 
 
-#define SPI_MOSI_PIN GPIO_Pin_0
-#define SPI_MOSI_PORT GPIOA
+#define SPI_MOSI_PIN GPIO_Pin_5
+#define SPI_MOSI_PORT GPIOB
 
-//#define SPI_MISO_PIN GPIO_Pin_15
-//#define SPI_MISO_PORT GPIOA
+#define SPI_MISO_PIN GPIO_Pin_4
+#define SPI_MISO_PORT GPIOB
 
-#define SPI_CLK_PIN GPIO_Pin_1
-#define SPI_CLK_PORT GPIOF
+#define SPI_CLK_PIN GPIO_Pin_3
+#define SPI_CLK_PORT GPIOB
 
-#define SPI_SS_PIN GPIO_Pin_0
-#define SPI_SS_PORT GPIOF
+#define SPI_SS_PIN GPIO_Pin_15
+#define SPI_SS_PORT GPIOA
 
 //spi type
-#define SOFTSPI_3WIRE
-//#define SOFTSPI_4WIRE
+//#define SOFTSPI_3WIRE
+#define SOFTSPI_4WIRE
 //#define SOFTSPI_NONE
 
 // check for radio chip ( 3 times flash = not found)
 #define RADIO_CHECK
 
 // radio type
-//#define RADIO_XN297
-#define RADIO_XN297L
+#define RADIO_XN297
+//#define RADIO_XN297L
 
 
 
@@ -162,9 +168,9 @@
 
 //**DO NOT ENABLE ESC DRIVER WITH BRUSHED MOTORS ATTACHED**
 
-#define USE_PWM_DRIVER
+//#define USE_PWM_DRIVER
 //#define USE_ESC_DRIVER
-//#define USE_DSHOT_DRIVER_BETA
+#define USE_DSHOT_DRIVER_BETA
 		
 // pwm pins disable
 // disable all pwm pins / function
@@ -176,16 +182,16 @@
 //#define PWM_PA1
 //#define PWM_PA2
 //#define PWM_PA3
-#define PWM_PA4
+//#define PWM_PA4
 //#define PWM_PA5
-#define PWM_PA6
-#define PWM_PA7
-//#define PWM_PA8
-//#define PWM_PA9
-//#define PWM_PA10
-//#define PWM_PA11
+//#define PWM_PA6
+//#define PWM_PA7
+#define PWM_PA8
+#define PWM_PA9
+#define PWM_PA10
+#define PWM_PA11
 //#define PWM_PB0
-#define PWM_PB1
+//#define PWM_PB1
 
 
 // Assingment of pin to motor
@@ -204,10 +210,10 @@
 //#define MOTOR0_PIN_PA7
 //#define MOTOR0_PIN_PA8
 //#define MOTOR0_PIN_PA9
-//#define MOTOR0_PIN_PA10
+#define MOTOR0_PIN_PA10
 //#define MOTOR0_PIN_PA11
 //#define MOTOR0_PIN_PB0
-#define MOTOR0_PIN_PB1
+//#define MOTOR0_PIN_PB1
 
 // front-left motor
 // motor 1 pin
@@ -216,11 +222,11 @@
 //#define MOTOR1_PIN_PA1
 //#define MOTOR1_PIN_PA2
 //#define MOTOR1_PIN_PA3
-#define MOTOR1_PIN_PA4
+//#define MOTOR1_PIN_PA4
 //#define MOTOR1_PIN_PA5
 //#define MOTOR1_PIN_PA6
 //#define MOTOR1_PIN_PA7
-//#define MOTOR1_PIN_PA8
+#define MOTOR1_PIN_PA8
 //#define MOTOR1_PIN_PA9
 //#define MOTOR1_PIN_PA10
 //#define MOTOR1_PIN_PA11
@@ -236,12 +242,12 @@
 //#define MOTOR2_PIN_PA3
 //#define MOTOR2_PIN_PA4
 //#define MOTOR2_PIN_PA5
-#define MOTOR2_PIN_PA6
+//#define MOTOR2_PIN_PA6
 //#define MOTOR2_PIN_PA7
 //#define MOTOR2_PIN_PA8
 //#define MOTOR2_PIN_PA9
 //#define MOTOR2_PIN_PA10
-//#define MOTOR2_PIN_PA11
+#define MOTOR2_PIN_PA11
 //#define MOTOR2_PIN_PB0
 //#define MOTOR2_PIN_PB1
 
@@ -255,9 +261,9 @@
 //#define MOTOR3_PIN_PA4
 //#define MOTOR3_PIN_PA5
 //#define MOTOR3_PIN_PA6
-#define MOTOR3_PIN_PA7
+//#define MOTOR3_PIN_PA7
 //#define MOTOR3_PIN_PA8
-//#define MOTOR3_PIN_PA9
+#define MOTOR3_PIN_PA9
 //#define MOTOR3_PIN_PA10
 //#define MOTOR3_PIN_PA11
 //#define MOTOR3_PIN_PB0

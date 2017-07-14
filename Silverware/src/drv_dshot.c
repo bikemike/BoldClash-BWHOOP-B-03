@@ -32,8 +32,8 @@
 // timing: 150 - 150uS bitbang
 
 //#define DSHOT600
-#define DSHOT150
-//#define DSHOT300
+//#define DSHOT150
+#define DSHOT300
 
 // IDLE_OFFSET is added to the throttle. Adjust its value so that the motors
 // still spin at minimum throttle.
@@ -73,7 +73,7 @@
 #endif
 
 #ifdef __GNUC__
-#error "Bit-bang timing not tested with GCC"
+//#error "Bit-bang timing not tested with GCC"
 #endif
 
 
@@ -89,7 +89,7 @@ int pwmdir = 0;
 static unsigned long pwm_failsafe_time = 1;
 static int motor_data[ 48 ] = { 0 };
 
-void make_packet( uint8_t number, uint16_t value );
+static void make_packet( uint8_t number, uint16_t value );
 
 
 //
@@ -278,9 +278,9 @@ static void make_packet( uint8_t number, uint16_t value )
 #pragma push
 #pragma O2
 
-#define D600_DELAY   __asm{NOP} __asm{NOP} __asm{NOP} __asm{NOP} \
-    __asm{NOP} __asm{NOP} __asm{NOP} __asm{NOP} \
-    //__asm{NOP} __asm{NOP} __asm{NOP} __asm{NOP} 
+#define D600_DELAY   __NOP(); __NOP(); __NOP(); __NOP(); \
+    __NOP(); __NOP(); __NOP(); __NOP(); \
+    //__NOP(); __NOP(); __NOP(); __NOP(); 
 
 
 void bitbang_data1()
@@ -291,7 +291,7 @@ void bitbang_data1()
 
 			gpioset( DSHOT_PORT_0, DSHOT_PIN_0 ); // FL
 		} else {
-			__asm{NOP}
+			__NOP();
 			gpioreset( DSHOT_PORT_0, DSHOT_PIN_0 );
 		}
  
@@ -310,7 +310,7 @@ void bitbang_data2()
 		if (  motor_data[ i ] & 0x02 ) {
 			gpioset( DSHOT_PORT_1, DSHOT_PIN_1 );  // BL
 		} else {
-			 __asm{NOP}
+			 __NOP();
 			gpioreset( DSHOT_PORT_1, DSHOT_PIN_1 );
 		}
 
@@ -327,7 +327,7 @@ void bitbang_data3()
 		if ( motor_data[ i ] & 0x04 ) {
 			gpioset( DSHOT_PORT_2, DSHOT_PIN_2 ); // FR
 		} else {
-			__asm{NOP}
+			__NOP();
 			gpioreset( DSHOT_PORT_2, DSHOT_PIN_2 );
 		}
 
@@ -345,7 +345,7 @@ void bitbang_data4()
 
 			gpioset( DSHOT_PORT_3, DSHOT_PIN_3 ); // BR
 		} else {
-			 __asm{NOP}
+			 __NOP();
 			gpioreset( DSHOT_PORT_3, DSHOT_PIN_3 );
 
 		}
@@ -363,28 +363,28 @@ void bitbang_data()
 		if ( motor_data[ i ] & 0x01 ) {
 			gpioset( DSHOT_PORT_0, DSHOT_PIN_0 ); // FL
 		} else {
-			__asm{NOP}
+			__NOP();
 			gpioreset( DSHOT_PORT_0, DSHOT_PIN_0 );
 		}
         
 		if ( motor_data[ i ] & 0x02 ) {
 			gpioset( DSHOT_PORT_1, DSHOT_PIN_1 );  // BL
 		} else {
-            __asm{NOP}
+            __NOP();
 			gpioreset( DSHOT_PORT_1, DSHOT_PIN_1 );
 		}
 
 		if ( motor_data[ i ] & 0x04 ) {
 			gpioset( DSHOT_PORT_2, DSHOT_PIN_2 ); // FR
 		} else {
-            __asm{NOP}
+            __NOP();
 			gpioreset( DSHOT_PORT_2, DSHOT_PIN_2 );
 		}
         
         if ( motor_data[ i ] & 0x08 ) {
 			gpioset( DSHOT_PORT_3, DSHOT_PIN_3 ); // BR
 		} else {
-            __asm{NOP}
+            __NOP();
 			gpioreset( DSHOT_PORT_3, DSHOT_PIN_3 );
 
 
@@ -392,32 +392,32 @@ void bitbang_data()
 
 #if defined( DSHOT300 ) && ! defined( DSHOT150 )
 
-		__asm{NOP} __asm{NOP} __asm{NOP} __asm{NOP}
-        __asm{NOP} __asm{NOP} __asm{NOP} __asm{NOP}
+		__NOP(); __NOP(); __NOP(); __NOP();
+        __NOP(); __NOP(); __NOP(); __NOP();
        
         
 #ifndef LESS_DELAY
-      __asm{NOP} __asm{NOP} __asm{NOP} __asm{NOP}
+      __NOP(); __NOP(); __NOP(); __NOP();
 #endif
 #elif defined( DSHOT150 ) && ! defined( DSHOT300 )
 
-		__asm{NOP} __asm{NOP} __asm{NOP} __asm{NOP}
-		__asm{NOP} __asm{NOP} __asm{NOP} __asm{NOP}
-		__asm{NOP} __asm{NOP} __asm{NOP} __asm{NOP}
-		__asm{NOP} __asm{NOP} __asm{NOP} __asm{NOP}
-		__asm{NOP} __asm{NOP} __asm{NOP} __asm{NOP}
-		__asm{NOP} __asm{NOP} __asm{NOP} __asm{NOP}
-		__asm{NOP} __asm{NOP} __asm{NOP} __asm{NOP}
-		__asm{NOP} __asm{NOP} __asm{NOP} __asm{NOP}
-		__asm{NOP} __asm{NOP} __asm{NOP} __asm{NOP}
-		__asm{NOP} __asm{NOP} __asm{NOP} __asm{NOP}
-		__asm{NOP} __asm{NOP} __asm{NOP} __asm{NOP}
-        __asm{NOP} __asm{NOP} __asm{NOP} __asm{NOP}
-		__asm{NOP} __asm{NOP} __asm{NOP} __asm{NOP}
-		__asm{NOP} __asm{NOP} __asm{NOP} __asm{NOP}
-        __asm{NOP} __asm{NOP} __asm{NOP} __asm{NOP}
-		__asm{NOP} __asm{NOP} __asm{NOP}
-//		__asm{NOP} __asm{NOP} __asm{NOP} __asm{NOP}
+		__NOP(); __NOP(); __NOP(); __NOP();
+		__NOP(); __NOP(); __NOP(); __NOP();
+		__NOP(); __NOP(); __NOP(); __NOP();
+		__NOP(); __NOP(); __NOP(); __NOP();
+		__NOP(); __NOP(); __NOP(); __NOP();
+		__NOP(); __NOP(); __NOP(); __NOP();
+		__NOP(); __NOP(); __NOP(); __NOP();
+		__NOP(); __NOP(); __NOP(); __NOP();
+		__NOP(); __NOP(); __NOP(); __NOP();
+		__NOP(); __NOP(); __NOP(); __NOP();
+		__NOP(); __NOP(); __NOP(); __NOP();
+        __NOP(); __NOP(); __NOP(); __NOP();
+		__NOP(); __NOP(); __NOP(); __NOP();
+		__NOP(); __NOP(); __NOP(); __NOP();
+        __NOP(); __NOP(); __NOP(); __NOP();
+		__NOP(); __NOP(); __NOP();
+//		__NOP(); __NOP(); __NOP(); __NOP();
 
 #else
 //#error "Either define DSHOT150 or DSHOT300"
