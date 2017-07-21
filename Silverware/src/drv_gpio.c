@@ -21,6 +21,12 @@ void gpio_init(void)
   GPIO_Init(VREG_PORT_1, &GPIO_InitStructure); 
 	GPIO_SetBits( VREG_PORT_1, VREG_PIN_1);
 #endif
+#ifdef SPI_CE_PIN
+	GPIO_InitStructure.GPIO_Pin = SPI_CE_PIN;	
+  GPIO_Init(SPI_CE_PORT, &GPIO_InitStructure); 
+	GPIO_ResetBits( SPI_CE_PORT, SPI_CE_PIN);
+	GPIO_SetBits( SPI_CE_PORT, SPI_CE_PIN);
+#endif
 
 	
 #if ( LED_NUMBER > 0 )

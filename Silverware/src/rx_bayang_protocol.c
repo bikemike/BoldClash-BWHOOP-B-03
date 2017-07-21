@@ -39,6 +39,7 @@ THE SOFTWARE.
 
 #ifdef RX_BAYANG_PROTOCOL
 
+#define _BV( bit )   (1 << (bit))
 
 
 extern float rx[4];
@@ -62,7 +63,6 @@ void rx_init()
 {
 
 	
-/*
 uint8_t bbcal[6] = { 0x3f , 0x4c , 0x84 , 0x6F , 0x9c , 0x20  };
 writeregs( bbcal , sizeof(bbcal) );
 
@@ -73,7 +73,6 @@ writeregs( rfcal , sizeof(rfcal) );
 
 uint8_t demodcal[6] = { 0x39 , 0x0b , 0xdf , 0xc4 , 0xa7 , 0x03};
 writeregs( demodcal , sizeof(demodcal) );
-*/
 
 int rxaddress[5] = { 0 , 0 , 0 , 0 , 0  };
 xn_writerxaddress( rxaddress);
@@ -94,6 +93,16 @@ spi_csoff();
 	xn_command( FLUSH_RX);
   xn_writereg( RF_CH , 0 );  // bind on channel 0
   xn_writereg( 0 , B10001111 ); // power up, crc enabled
+
+	xn_writereg(STATUS, 0x70); // clear rx_dr, tx_ds
+	xn_command( FLUSH_RX);
+#ifdef RADIO_CHECK
+    int rxcheck = xn_readreg(0x0f); // rx address pipe 5   
+    // should be 0xc6
+    extern void failloop(int);
+    if (rxcheck != 0xc6)
+        failloop(3);
+#endif
 	
 }
 
@@ -101,21 +110,14 @@ spi_csoff();
 
 static char checkpacket()
 {
-	int status = xn_readreg( 7 );
-	if ( status&(1<<MASK_RX_DR) )
-	{	 // rx clear bit
-		// this is not working well
-	 // xn_writereg( STATUS , (1<<MASK_RX_DR) );
-		//RX packet received
-		//return 1;
-	}
-	if( (status & B00001110) != B00001110 )
+	uint8_t status = xn_command(NOP);
+
+	if (status & _BV(MASK_RX_DR))
 	{
-		// rx fifo not empty		
-		return 2;	
+		return 1;
 	}
-	
-  return 0;
+
+	return 0;
 }
 
 
@@ -215,6 +217,9 @@ void nextchannel()
 	chan++;
 	if (chan > 3 ) chan = 0;
 	xn_writereg(0x25, rfchannel[chan] );
+	xn_writereg(STATUS, 0x70); // clear rx_dr, tx_ds
+	xn_command( FLUSH_RX);
+	xn_command( FLUSH_TX);
 }
 
 
@@ -292,6 +297,9 @@ void checkrx(void)
 				      printf(" BIND \n");
 #endif
 			      }
+				xn_writereg(STATUS, 0x70); // clear rx_dr, tx_ds
+				xn_command( FLUSH_RX);
+
 		    }
 		  else
 		    {		// normal mode  
@@ -306,10 +314,11 @@ void checkrx(void)
 
 unsigned long temptime = gettime();
 	
-			    nextchannel();
 
 			    xn_readpayload(rxdata, 15);
 			    pass = decodepacket();
+
+			    nextchannel();
 
 			    if (pass)
 			      {
@@ -325,6 +334,8 @@ unsigned long temptime = gettime();
 			      }
 			    else
 			      {
+				      //failsafetime = temptime;
+				      //failsafe = 0;
 #ifdef RXDEBUG
 				      failcount++;
 #endif

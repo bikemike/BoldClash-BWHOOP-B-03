@@ -146,6 +146,9 @@
 #define SPI_SS_PIN GPIO_Pin_15
 #define SPI_SS_PORT GPIOA
 
+#define SPI_CE_PIN GPIO_Pin_8
+#define SPI_CE_PORT GPIOB
+
 //spi type
 //#define SOFTSPI_3WIRE
 #define SOFTSPI_4WIRE

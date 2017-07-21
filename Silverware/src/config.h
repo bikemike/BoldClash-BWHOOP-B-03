@@ -15,7 +15,7 @@
 #define LOW_RATES_MULTI 0.5f
 
 // disable inbuilt expo functions
-#define DISABLE_EXPO
+//#define DISABLE_EXPO
 
 // use if your tx has no expo function
 // also comment out DISABLE_EXPO to use
