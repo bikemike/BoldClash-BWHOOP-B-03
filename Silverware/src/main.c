@@ -275,11 +275,12 @@ if ( liberror )
 		}
 
         // read gyro and accelerometer data	
-		sixaxis_read();
+		sixaxis_read(0 == aux[LEVELMODE], checkrx);
 		
+		checkrx();
 		
         // all flight calculations and motors
-		control();
+		control(checkrx);
 
         // attitude calculations for level mode
  		extern void imu_calc(void);		
@@ -477,7 +478,8 @@ checkrx();
 
 		
 // the delay is required or it becomes endless loop ( truncation in time routine)
-while ( (gettime() - time) < LOOPTIME ) delay(10); 		
+while ((gettime() - time) < (LOOPTIME - 22) )
+			  checkrx(); 		
 
 		
 	}// end loop

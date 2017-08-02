@@ -353,7 +353,7 @@ void softi2c_writedata(int device_address ,int register_address , int *data, int
 }
 
 
-void softi2c_readdata(int device_address ,int register_address , int *data, int size ) 
+void softi2c_readdata(int device_address ,int register_address , int *data, int size, idle_callback idle_cb  ) 
 {
 	int index = 0;
  _sendstart();
@@ -363,6 +363,8 @@ void softi2c_readdata(int device_address ,int register_address , int *data, int 
  _sendbyte( (device_address<<1) + 1);
 	while(index<size-1)
 	{
+		if (NULL != idle_cb)
+			idle_cb();
 	data[index] = _readbyte(0);
 	index++;	
 	}

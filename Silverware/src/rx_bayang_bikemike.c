@@ -1142,7 +1142,11 @@ void checkrx(void)
 #ifdef RX_TELEMETRY_BIKEMIKE
 	if (RADIO_STATE_TRANSMITTING == radio_state)
 	{
+#ifdef RADIO_XN297L 
+		uint8_t status = xn_readreg(7);
+#else
 		int status = xn_command(NOP);
+#endif
 
 		if (status & _BV(MASK_TX_DS))
 		{

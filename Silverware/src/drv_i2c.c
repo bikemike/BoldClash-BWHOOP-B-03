@@ -76,14 +76,14 @@ void i2c_writereg( int reg ,int data)
 }
 
 
-int i2c_readdata( int reg, int *data, int size )
+int i2c_readdata( int reg, int *data, int size, idle_callback idle_cb)
 {
 	#ifdef USE_HARDWARE_I2C
-	return hw_i2c_readdata( reg, data, size );
+	return hw_i2c_readdata( reg, data, size, idle_cb );
 	#endif
 	
 	#ifdef USE_SOFTWARE_I2C
-	softi2c_readdata( SOFTI2C_GYRO_ADDRESS , reg , data, size );
+	softi2c_readdata( SOFTI2C_GYRO_ADDRESS , reg , data, size, idle_cb );
 	return 1;
 	#endif
 	
