@@ -270,11 +270,13 @@ float rate_multiplier = 1.0;
 	}
 #endif	
 
-idle_cb();
+if (NULL != idle_cb)
+	idle_cb();
 
 pid_precalc();	
 
-idle_cb();
+if (NULL != idle_cb)
+	idle_cb();
 
 	// flight control
 	if (aux[LEVELMODE]&&!acro_override)
@@ -292,7 +294,8 @@ idle_cb();
 
 	  }
 
-	idle_cb();
+	if (NULL != idle_cb)
+		idle_cb();
 
 	pid(0);
 	pid(1);
@@ -630,7 +633,8 @@ thrsum = 0;
 	}// end motors on
 
    
-	idle_cb();
+	if (NULL != idle_cb)
+		idle_cb();
 
     if (aux[LEVELMODE]&&!acro_override)
     {
@@ -662,7 +666,8 @@ thrsum = 0;
 		error[2] = yawerror[2]  - gyro[2];  
     }
     
-	idle_cb();	
+	if (NULL != idle_cb)
+		idle_cb();	
 }
 
 
