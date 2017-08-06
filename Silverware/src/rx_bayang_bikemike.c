@@ -973,7 +973,7 @@ void radio_set_tx()
 #endif
 	xn_writereg(STATUS, 0x70); // clear rx_dr, tx_ds
 	xn_command(FLUSH_TX);
-	//xn_writereg( RF_SETUP , XN_POWER_TX);
+	xn_writereg( RF_SETUP , XN_POWER_TX);
 }
 
 void radio_set_rx()
@@ -985,7 +985,7 @@ void radio_set_rx()
 #endif
 	xn_writereg(STATUS, 0x70); // clear rx_dr, tx_ds
 	xn_command(FLUSH_RX);
-	//xn_writereg( RF_SETUP , XN_POWER_RX);
+	xn_writereg( RF_SETUP , XN_POWER_RX);
 } 
 
 
