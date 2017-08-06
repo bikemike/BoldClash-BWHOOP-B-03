@@ -113,6 +113,8 @@ unsigned long ledcommandtime = 0;
 void failloop( int val);
 
 int random_seed = 0;
+float times[3] = {0.f};
+uint32_t times_next[3] = {0};
 
 int main(void)
 {
@@ -252,8 +254,14 @@ if ( liberror )
 	while(1)
 	{
 		// gettime() needs to be called at least once per second 
+		uint32_t timer = 0;
 		unsigned long time = gettime(); 
-		looptime = ((uint32_t)( time - lastlooptime));
+		timer = time - lastlooptime;
+		looptime = timer;
+
+		if (times_next[0]  < timer)
+			times_next[0] = timer;
+
 		if ( looptime <= 0 ) looptime = 1;
 		looptime = looptime * 1e-6f;
 		if ( looptime > 0.02f ) // max loop 20ms
@@ -275,15 +283,42 @@ if ( liberror )
 		}
 
         // read gyro and accelerometer data	
-		sixaxis_read();
+		timer = gettime();
+		sixaxis_read(0 == aux[LEVELMODE], checkrx);
+		timer = gettime() - timer;
+
+		if (times_next[1]  < timer)
+			times_next[1] = timer;
+
+
 		
+		checkrx();
 		
         // all flight calculations and motors
-		control();
+		timer = gettime();
+		control(checkrx);
+		timer = gettime() - timer;
+
+		if (times_next[2]  < timer)
+			times_next[2] = timer;
+
+		static int copy_time = 0;
+		if (gettime() - copy_time > 500000)
+		{
+			times[0] = times_next[0]/10000.f;
+			times[1] = times_next[1]/10000.f;
+			times[2] = times_next[2]/10000.f;
+			times_next[0] = 0;
+			times_next[1] = 0;
+			times_next[2] = 0;
+		}
 
         // attitude calculations for level mode
- 		extern void imu_calc(void);		
-		imu_calc();       
+		if ( aux[LEVELMODE] )
+		{
+			extern void imu_calc(void);		
+			imu_calc();       
+		}
       
 // battery low logic
 
@@ -477,7 +512,8 @@ checkrx();
 
 		
 // the delay is required or it becomes endless loop ( truncation in time routine)
-while ( (gettime() - time) < LOOPTIME ) delay(10); 		
+while ((gettime() - time) < (LOOPTIME - 22) )
+			  checkrx(); 		
 
 		
 	}// end loop

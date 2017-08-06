@@ -46,7 +46,7 @@ extern float gyro[3];
 extern int failsafe;
 extern float pidoutput[PIDNUMBER];
 
-extern float angleerror[3];
+extern float angleerror[2];
 extern float attitude[3];
 
 int onground = 1;
@@ -92,7 +92,7 @@ float underthrottlefilt = 0;
 
 float rxcopy[4];
 
-void control( void)
+void control(idle_callback idle_cb)
 {	
 
 // rates / expert mode
@@ -270,8 +270,13 @@ float rate_multiplier = 1.0;
 	}
 #endif	
 
+if (NULL != idle_cb)
+	idle_cb();
+
 pid_precalc();	
 
+if (NULL != idle_cb)
+	idle_cb();
 
 	// flight control
 	if (aux[LEVELMODE]&&!acro_override)
@@ -289,6 +294,8 @@ pid_precalc();
 
 	  }
 
+	if (NULL != idle_cb)
+		idle_cb();
 
 	pid(0);
 	pid(1);
@@ -636,6 +643,9 @@ thrsum = 0;
 	}// end motors on
 
    
+	if (NULL != idle_cb)
+		idle_cb();
+
     if (aux[LEVELMODE]&&!acro_override)
     {
         // level mode calculations done after to reduce latency
@@ -666,7 +676,8 @@ thrsum = 0;
 		error[2] = yawerror[2]  - gyro[2];  
     }
     
-	
+	if (NULL != idle_cb)
+		idle_cb();	
 }
 
 

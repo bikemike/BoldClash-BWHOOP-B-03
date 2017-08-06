@@ -127,22 +127,28 @@ float gyrocal[3];
 
 float lpffilter(float in, int num);
 
-void sixaxis_read(void)
+void sixaxis_read(int gyro_only, idle_callback idle_cb)
 {
-	int data[16];
+	int data[14];
 	float gyronew[3];
 	
-	i2c_readdata( 59 , data , 14 );
+	if (gyro_only)
+	{	
+		i2c_readdata( 67 , data+8 , 6, idle_cb);
+	}
+	else
+	{
+		i2c_readdata( 59 , data , 14, idle_cb);
 		
 #ifdef SENSOR_ROTATE_90_CW	         
-        accel[0] = (int16_t) ((data[2] << 8) + data[3]);
-        accel[1] = -(int16_t) ((data[0] << 8) + data[1]);
-        accel[2] = (int16_t) ((data[4] << 8) + data[5]);
+		accel[0] = (int16_t) ((data[2] << 8) + data[3]);
+		accel[1] = -(int16_t) ((data[0] << 8) + data[1]);
+		accel[2] = (int16_t) ((data[4] << 8) + data[5]);
 #else
         
-	accel[0] = -(int16_t) ((data[0] << 8) + data[1]);
-	accel[1] = -(int16_t) ((data[2] << 8) + data[3]);
-	accel[2] = (int16_t) ((data[4] << 8) + data[5]);  
+		accel[0] = -(int16_t) ((data[0] << 8) + data[1]);
+		accel[1] = -(int16_t) ((data[2] << 8) + data[3]);
+		accel[2] = (int16_t) ((data[4] << 8) + data[5]);  
         
 #endif
   
@@ -196,6 +202,7 @@ void sixaxis_read(void)
 		accel[0] = -accel[0];	
 		}
 #endif	
+	}
 //order
 	gyronew[1] = (int16_t) ((data[8] << 8) + data[9]);
 	gyronew[0] = (int16_t) ((data[10] << 8) + data[11]);
@@ -273,96 +280,6 @@ gyronew[2] = - gyronew[2];
 }
 
 
-void gyro_read( void)
-{
-int data[6];
-	
-i2c_readdata( 67 , data , 6 );
-	
-float gyronew[3];
-	// order
-gyronew[1] = (int16_t) ((data[0]<<8) + data[1]);
-gyronew[0] = (int16_t) ((data[2]<<8) + data[3]);
-gyronew[2] = (int16_t) ((data[4]<<8) + data[5]);
-
-		
-gyronew[0] = gyronew[0] - gyrocal[0];
-gyronew[1] = gyronew[1] - gyrocal[1];
-gyronew[2] = gyronew[2] - gyrocal[2];
-	
-	
-		
-#ifdef SENSOR_ROTATE_45_CCW
-		{
-		float temp = gyronew[1];
-		gyronew[1] = gyronew[0] * INVSQRT2 + gyronew[1] * INVSQRT2;
-		gyronew[0] = gyronew[0] * INVSQRT2 - temp * INVSQRT2;	
-		}
-#endif
-        
-#ifdef SENSOR_ROTATE_45_CW
-		{
-		float temp = gyronew[0];
-		gyronew[0] = gyronew[1] * INVSQRT2 + gyronew[0] * INVSQRT2;
-		gyronew[1] = gyronew[1] * INVSQRT2 - temp * INVSQRT2;	
-		}
-#endif
-			
-#ifdef SENSOR_ROTATE_90_CW
-		{
-		float temp = gyronew[1];
-		gyronew[1] = -gyronew[0];
-		gyronew[0] = temp;	
-		}
-#endif
-
-				
-#ifdef SENSOR_ROTATE_90_CCW
-		{
-		float temp = gyronew[1];
-		gyronew[1] = gyronew[0];
-		gyronew[0] = -temp;	
-		}
-#endif
-	
-					
-#ifdef SENSOR_ROTATE_180
-		{
-		gyronew[1] = -gyronew[1];
-		gyronew[0] = -gyronew[0];	
-		}
-#endif		
-		
-							
-#ifdef SENSOR_FLIP_180
-		{
-		gyronew[1] = -gyronew[1];
-		gyronew[2] = -gyronew[2];	
-		}
-#endif		
-	
-
-
-		
-//gyronew[0] = - gyronew[0];
-gyronew[1] = - gyronew[1];
-gyronew[2] = - gyronew[2];
-	
-	
-for (int i = 0; i < 3; i++)
-	  {
-		  gyronew[i] = gyronew[i] * 0.061035156f * 0.017453292f;
-#ifndef SOFT_LPF_NONE
-		  gyro[i] = lpffilter(gyronew[i], i);
-#else
-		  gyro[i] = gyronew[i];
-#endif
-	  }
-
-}
- 
-
-
 #define CAL_TIME 2e6
 
 void gyro_cal(void)
@@ -390,7 +307,7 @@ while ( time - timestart < CAL_TIME  &&  time - timemax < 15e6 )
 		lastlooptime = time;
 		if ( looptime == 0 ) looptime = 1;
 
-	i2c_readdata(  67 , data , 6 );	
+	i2c_readdata(  67 , data , 6, NULL);	
 
 			
 	gyro[1] = (int16_t) ((data[0]<<8) + data[1]);
@@ -471,7 +388,7 @@ void acc_cal(void)
 	accelcal[2] = 2048;
 	for (int y = 0; y < 500; y++)
 	  {
-		  sixaxis_read();
+		  sixaxis_read(0, NULL);
 		  for (int x = 0; x < 3; x++)
 		    {
 			    lpf(&accelcal[x], accel[x], 0.92);

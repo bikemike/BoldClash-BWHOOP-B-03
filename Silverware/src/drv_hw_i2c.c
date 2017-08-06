@@ -257,7 +257,7 @@ return;
 
 
 
-int hw_i2c_readdata( int reg, int *data, int size )
+int hw_i2c_readdata( int reg, int *data, int size, idle_callback idle_cb  )
 {
 
 static uint8_t i = 0;
@@ -281,6 +281,8 @@ for(i = 0; i<size; i++)
 				liberror++;
 				return 0;
 				}
+			if (0 != idle_cb)
+				idle_cb();
 		}
 	data[i] = I2C_ReceiveData(I2C1);
 	}
@@ -294,7 +296,7 @@ return 1;
 int hw_i2c_readreg( int reg )
 {
 	int data;
-	hw_i2c_readdata( reg, &data, 1 );
+	hw_i2c_readdata( reg, &data, 1, 0 );
 	return data;
 }
 

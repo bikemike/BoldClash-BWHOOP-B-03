@@ -37,6 +37,7 @@ void xn_writetxaddress(  int *addr )	;
 #define FIFO_STATUS 0x17
 
 // bit masks
+#define EN_PM       7
 #define MASK_RX_DR  6
 #define MASK_TX_DS  5
 #define MASK_MAX_RT 4
