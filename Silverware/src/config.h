@@ -6,8 +6,8 @@
 
 // rate in deg/sec
 // for acro mode
-#define MAX_RATE 360.0
-#define MAX_RATEYAW 360.0
+#define MAX_RATE 720.0
+#define MAX_RATEYAW 540.0
 
 // max angle for level mode
 #define MAX_ANGLE_HI 70.0f
@@ -15,13 +15,13 @@
 #define LOW_RATES_MULTI 0.5f
 
 // disable inbuilt expo functions
-#define DISABLE_EXPO
+//#define DISABLE_EXPO
 
 // use if your tx has no expo function
 // also comment out DISABLE_EXPO to use
 // -1 to 1 , 0 = no exp
 // positive = less sensitive near center 
-#define EXPO_XY 0.3
+#define EXPO_XY 0.6
 #define EXPO_YAW 0.0
 
 
@@ -79,11 +79,11 @@
 //#define SOFT_LPF_1ST_043HZ
 //#define SOFT_LPF_1ST_100HZ
 //#define SOFT_LPF_2ND_043HZ
-#define SOFT_LPF_2ND_088HZ
+//#define SOFT_LPF_2ND_088HZ
 //#define SOFT_LPF_4TH_088HZ
 //#define SOFT_LPF_4TH_160HZ
 //#define SOFT_LPF_4TH_250HZ
-//#define SOFT_LPF_NONE
+#define SOFT_LPF_NONE
 
 
 
@@ -116,7 +116,7 @@
 // rates / expert mode
 #define RATES CH_EXPERT
 
-#define LEVELMODE CH_AUX1
+#define LEVELMODE DEVO_CHAN_7
 
 #define STARTFLIP CH_OFF
 
@@ -138,7 +138,7 @@
 
 // Gestures enable ( gestures 1 = acc only)
 //#define GESTURES1_ENABLE
-#define GESTURES2_ENABLE
+//#define GESTURES2_ENABLE
 
 // enable motor filter
 // hanning 3 sample fir filter
@@ -182,9 +182,9 @@
 //#define RX_H7_PROTOCOL
 //#define RX_BAYANG_PROTOCOL
 //#define RX_BAYANG_PROTOCOL_TELEMETRY
+//#define RX_BAYANG_PROTOCOL_BLE_BEACON
 #define RX_BAYANG_BIKEMIKE_TELEM
 #define RX_TELEMETRY_BIKEMIKE
-//#define RX_BAYANG_PROTOCOL_BLE_BEACON
 //#define RX_BAYANG_BLE_APP
 //#define RX_CX10BLUE_PROTOCOL
 
@@ -207,13 +207,13 @@
 
 
 // Comment out to disable pid tuning gestures
-#define PID_GESTURE_TUNING
-#define COMBINE_PITCH_ROLL_PID_TUNING
+//#define PID_GESTURE_TUNING
+//#define COMBINE_PITCH_ROLL_PID_TUNING
 
 // flash save method
 // flash_save 1: pids + accel calibration
 // flash_save 2: accel calibration to option bytes
-#define FLASH_SAVE1
+//#define FLASH_SAVE1
 //#define FLASH_SAVE2
 
 
@@ -264,7 +264,7 @@
 // enable motors if pitch / roll controls off center (at zero throttle)
 // possible values: 0 / 1
 // use in acro build only
-#define ENABLESTIX 0
+#define ENABLESTIX 1
 #define ENABLESTIX_TRESHOLD 0.3
 #define ENABLESTIX_TIMEOUT 1e6
 
