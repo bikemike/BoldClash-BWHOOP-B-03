@@ -138,7 +138,7 @@
 
 // Gestures enable ( gestures 1 = acc only)
 //#define GESTURES1_ENABLE
-#define GESTURES2_ENABLE
+//#define GESTURES2_ENABLE
 
 // enable motor filter
 // hanning 3 sample fir filter
@@ -207,13 +207,13 @@
 
 
 // Comment out to disable pid tuning gestures
-#define PID_GESTURE_TUNING
-#define COMBINE_PITCH_ROLL_PID_TUNING
+//#define PID_GESTURE_TUNING
+//#define COMBINE_PITCH_ROLL_PID_TUNING
 
 // flash save method
 // flash_save 1: pids + accel calibration
 // flash_save 2: accel calibration to option bytes
-#define FLASH_SAVE1
+//#define FLASH_SAVE1
 //#define FLASH_SAVE2
 
 
