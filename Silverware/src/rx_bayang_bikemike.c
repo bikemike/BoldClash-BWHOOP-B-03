@@ -178,8 +178,8 @@ writeregs( demodcal , sizeof(demodcal) );
 
 #define XN_TO_RX B00001111
 #define XN_TO_TX B00000010
-#define XN_POWER_RX B00000001
-#define XN_POWER_TX B00000110
+#define XN_POWER_RX B00000001 // LNA enabled
+#define XN_POWER_TX B00000110 // RF_PWR 00 = -10dBm, 01 = 0dBm, 10 = 8dBm, 11 = max 10dBm 
 #endif
 
 
@@ -809,7 +809,7 @@ static int decodepacket( void)
 
 
 			// data mode  = 0, 1, 2, 3 (pid roll/pitch, pid yaw, angle p&i, limits)
-			uint8_t num_data_modes = 4;
+			uint8_t num_data_modes = 5;
 			if (dataselect != new_dataselect)
 			{
 				dataselect = new_dataselect;
@@ -880,13 +880,11 @@ static int decodepacket( void)
 					{
 						if (1 == dataselect)
 						{
-							pidkp[0] *= multiplier;
-							pidkp[1] *= multiplier;
+							apidkp[0] *= multiplier;
 						}
 						else if (2 == dataselect)
 						{
-							pidki[0] *= multiplier;
-							pidki[1] *= multiplier;
+							apidkd[0] *= multiplier;
 						}
 						else if (3 == dataselect)
 						{
@@ -974,8 +972,8 @@ void radio_set_tx()
 	xn_writereg(CONFIG, _BV(PWR_UP)|_BV(EN_CRC)|_BV(CRCO));
 #endif
 	xn_writereg(STATUS, 0x70); // clear rx_dr, tx_ds
-	xn_writereg( RF_SETUP , XN_POWER_TX);
 	xn_command(FLUSH_TX);
+	xn_writereg( RF_SETUP , XN_POWER_TX);
 }
 
 void radio_set_rx()
@@ -986,9 +984,8 @@ void radio_set_rx()
 	xn_writereg(CONFIG, _BV(PWR_UP)|_BV(PRIM_RX)|_BV(EN_CRC)|_BV(CRCO));
 #endif
 	xn_writereg(STATUS, 0x70); // clear rx_dr, tx_ds
-	xn_writereg( RF_SETUP , XN_POWER_RX);
-	xn_command(FLUSH_TX);
 	xn_command(FLUSH_RX);
+	xn_writereg( RF_SETUP , XN_POWER_RX);
 } 
 
 
@@ -1039,8 +1036,7 @@ void send_telemetry_packet()
 	extern uint32_t loops_per_second;
 	extern unsigned long elapsedtime;
 	//FIXME:
-	//extern float times[3];
-	float times[3] = {0};
+	extern float times[3];
 
 	rxdata[0] = 0xa9;       // packet id
 	rxdata[1] = v.bytes[0]; // battery voltage

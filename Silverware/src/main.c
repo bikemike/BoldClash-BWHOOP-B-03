@@ -59,6 +59,13 @@ THE SOFTWARE.
 
 
 
+#ifdef __GNUC__
+#ifndef SOFT_LPF_NONE
+#warning the soft lpf may not work correctly with gcc due to longer loop time
+#endif
+#endif
+
+
 #ifdef DEBUG
 #include "debug.h"
 debug_type debug;
@@ -113,6 +120,8 @@ unsigned long ledcommandtime = 0;
 void failloop( int val);
 
 int random_seed = 0;
+float times[3] = {0.f};
+uint32_t times_next[3] = {0};
 
 int main(void)
 {
@@ -146,15 +155,11 @@ clk_init();
 	
 	if ( sixaxis_check() ) 
 	{
-		#ifdef SERIAL_INFO	
-		printf( " MPU found \n" );
-		#endif
+		
 	}
 	else 
 	{
-		#ifdef SERIAL_INFO	
-		printf( "ERROR: MPU NOT FOUND \n" );	
-		#endif
+        //gyro not found   
 		failloop(4);
 	}
 	
@@ -187,7 +192,7 @@ while ( count < 64 )
 	
 #ifdef STOP_LOWBATTERY
 // infinite loop
-if ( vbattfilt < (float) STOP_LOWBATTERY_TRESH) failloop(2);
+if ( vbattfilt < (float) 3.3f) failloop(2);
 #endif
 
 
@@ -201,13 +206,6 @@ rgb_init();
 serial_init();
 #endif
 
-#ifdef SERIAL_INFO	
-		printf( "Vbatt %2.2f \n", vbattfilt );
-		#ifdef NOMOTORS
-    printf( "NO MOTORS\n" );
-		#warning "NO MOTORS"
-		#endif
-#endif
 
 
 	imu_init();
@@ -230,9 +228,6 @@ extern float accelcal[3];
 extern int liberror;
 if ( liberror ) 
 {
-	  #ifdef SERIAL_INFO	
-		printf( "ERROR: I2C \n" );	
-		#endif
 		failloop(7);
 }
 
@@ -252,8 +247,14 @@ if ( liberror )
 	while(1)
 	{
 		// gettime() needs to be called at least once per second 
+		uint32_t timer = 0;
 		unsigned long time = gettime(); 
-		looptime = ((uint32_t)( time - lastlooptime));
+		timer = time - lastlooptime;
+		looptime = timer;
+
+		if (times_next[0]  < timer)
+			times_next[0] = timer;
+
 		if ( looptime <= 0 ) looptime = 1;
 		looptime = looptime * 1e-6f;
 		if ( looptime > 0.02f ) // max loop 20ms
@@ -275,16 +276,42 @@ if ( liberror )
 		}
 
         // read gyro and accelerometer data	
+		timer = gettime();
 		sixaxis_read(0 == aux[LEVELMODE], checkrx);
+		timer = gettime() - timer;
+
+		if (times_next[1]  < timer)
+			times_next[1] = timer;
+
+
 		
 		checkrx();
 		
         // all flight calculations and motors
+		timer = gettime();
 		control(checkrx);
+		timer = gettime() - timer;
+
+		if (times_next[2]  < timer)
+			times_next[2] = timer;
+
+		static int copy_time = 0;
+		if (gettime() - copy_time > 500000)
+		{
+			times[0] = times_next[0]/10000.f;
+			times[1] = times_next[1]/10000.f;
+			times[2] = times_next[2]/10000.f;
+			times_next[0] = 0;
+			times_next[1] = 0;
+			times_next[2] = 0;
+		}
 
         // attitude calculations for level mode
- 		extern void imu_calc(void);		
-		imu_calc();       
+		if ( aux[LEVELMODE] )
+		{
+			extern void imu_calc(void);		
+			imu_calc();       
+		}
       
 // battery low logic
 
@@ -308,7 +335,7 @@ if ( liberror )
 
         static float vbattfilt_corr = 4.2;
         // li-ion battery model compensation time decay ( 3 sec )
-        lpf ( &vbattfilt_corr , vbattfilt , FILTERCALC( 1000 , 3000e3) );
+        lpf ( &vbattfilt_corr , vbattfilt , FILTERCALC( 1000 , 18000e3) );
 	
         lpf ( &vbattfilt , battadc , 0.9968f);
 
@@ -343,10 +370,10 @@ if( thrfilt > 0.1f )
 	//	y(n) = x(n) - x(n-1) + R * y(n-1) 
 	//  out = in - lastin + coeff*lastout
 		// hpf
-	 ans = vcomp[z] - lastin[z] + FILTERCALC( 1000*12 , 1000e3) *lastout[z];
+	 ans = vcomp[z] - lastin[z] + FILTERCALC( 1000*12 , 6000e3) *lastout[z];
 		lastin[z] = vcomp[z];
 		lastout[z] = ans;
-	 lpf ( &score[z] , ans*ans , FILTERCALC( 1000*12 , 10e6 ) );	
+	 lpf ( &score[z] , ans*ans , FILTERCALC( 1000*12 , 60e6 ) );	
 	z++;
     
 	if ( z >= 12 ) z = 0;
@@ -377,7 +404,7 @@ if( thrfilt > 0.1f )
 		else hyst = 0.0f;
 
 		if (( tempvolt + (float) VDROP_FACTOR * thrfilt <(float) VBATTLOW + hyst )
-            || ( vbattfilt < ( float ) VBATTLOW_MIN ) )
+            || ( vbattfilt < ( float ) 2.7f ) )
             lowbatt = 1;
 		else lowbatt = 0;
 
@@ -406,7 +433,7 @@ else
 				}
 			else 
 			{
-				#ifdef GESTURES2_ENABLE
+			
 				if (ledcommand)
 						  {
 							  if (!ledcommandtime)
@@ -418,6 +445,7 @@ else
 							    }
 							  ledflash(100000, 8);
 						  }
+               	#ifndef DISABLE_GESTURES2
 						else if (ledblink)
 						{
 							if (!ledcommandtime)
@@ -427,7 +455,7 @@ else
 								    ledblink--;
 								    ledcommandtime = 0;
 							    }
-							ledflash(500000, 1);
+							ledflash(500000, 3);
 						}
 						else
 					#endif // end gesture led flash
