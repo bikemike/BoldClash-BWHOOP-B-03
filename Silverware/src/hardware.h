@@ -162,9 +162,9 @@
 
 //**DO NOT ENABLE ESC DRIVER WITH BRUSHED MOTORS ATTACHED**
 
-#define USE_PWM_DRIVER
+//#define USE_PWM_DRIVER
 //#define USE_ESC_DRIVER
-//#define USE_DSHOT_DRIVER_BETA
+#define USE_DSHOT_DRIVER_BETA
 		
 // pwm pins disable
 // disable all pwm pins / function
