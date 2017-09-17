@@ -254,7 +254,7 @@
 // enable motors if pitch / roll controls off center (at zero throttle)
 // possible values: 0 / 1
 // use in acro build only
-#define ENABLESTIX 1
+#define ENABLESTIX 0
 #define ENABLESTIX_TRESHOLD 0.3
 #define ENABLESTIX_TIMEOUT 1e6
 
