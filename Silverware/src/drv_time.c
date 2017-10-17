@@ -41,38 +41,49 @@ void time_init()
     }
 }
 
-// called at least once per second or time will overflow
+// called at least once per 16ms or time will overflow
 unsigned long time_update(void)
 {
-unsigned long maxticks = SysTick->LOAD;	
-unsigned long ticks = SysTick->VAL;	
-unsigned long elapsedticks;	
+	unsigned long maxticks = SysTick->LOAD;	
+	unsigned long ticks = SysTick->VAL;	
+	unsigned long quotient;	
+	unsigned long elapsedticks;	
+	static unsigned long remainder = 0;// carry forward the remainder ticks;
 
-	if (ticks < lastticks) elapsedticks = lastticks - ticks;	
-	else
-	{// overflow ( underflow really)
-	elapsedticks = lastticks + ( maxticks - ticks);			
+	if (ticks < lastticks) 
+	{
+		elapsedticks = lastticks - ticks;	
 	}
-	
-lastticks = ticks;
+	else
+	{
+		// overflow ( underflow really)
+		elapsedticks = lastticks + ( maxticks - ticks);			
+	}
+
+	lastticks = ticks;
+	elapsedticks += remainder;
 
 #ifdef ENABLE_OVERCLOCK
-globalticks = globalticks+ elapsedticks/8;
+	quotient = elapsedticks / 8;
+	remainder = elapsedticks - quotient*8;
 #else
-globalticks = globalticks+ elapsedticks/6;
+	// faster divide by 6, but requires that gettime 
+	// be called at minimum every 16ms 
+	// (max val for elapsedticks: 98303)
+	quotient = elapsedticks*43691>>18; 
+	remainder = elapsedticks - quotient*6;
 #endif	
-	
-return globalticks;	
+	globalticks = globalticks + quotient; 
+
+	return globalticks;	
 }
 
 
 // return time in uS from start ( micros())
 unsigned long gettime()
 {
-unsigned long time = time_update();
-return time;		
+	return time_update();
 }
-
 #ifdef ENABLE_OVERCLOCK
 // delay in uS
 void delay(uint32_t data)
