@@ -324,9 +324,12 @@ else throttle = (rx[3] - 0.1f)*1.11111111f;
 
 #ifdef 	THROTTLE_TRANSIENT_COMPENSATION
         
+#ifndef THROTTLE_TRANSIENT_COMPENSATION_FACTOR 
+ #define THROTTLE_TRANSIENT_COMPENSATION_FACTOR 7.0 
+#endif        
 extern float throttlehpf( float in );
         
-		  throttle += 7.0f * throttlehpf(throttle);
+		  throttle += (float) (THROTTLE_TRANSIENT_COMPENSATION_FACTOR) * throttlehpf(throttle);
 		  if (throttle < 0)
 			  throttle = 0;
 		  if (throttle > 1.0f)
@@ -667,11 +670,25 @@ thrsum = 0;
 		mix[i] = clip_ff(mix[i], i);
 		#endif
 
-		#ifdef MOTORS_TO_THROTTLE
+		#if defined(MOTORS_TO_THROTTLE) || defined(MOTORS_TO_THROTTLE_MODE)
+		#if defined(MOTORS_TO_THROTTLE_MODE) && !defined(MOTORS_TO_THROTTLE)
+		if(aux[MOTORS_TO_THROTTLE_MODE])
+		{
+		#endif
 		mix[i] = throttle;
+		if ( i == MOTOR_FL && ( rx[ROLL] > 0.5f || rx[PITCH] < -0.5f ) ) { mix[i] = 0; }
+		if ( i == MOTOR_BL && ( rx[ROLL] > 0.5f || rx[PITCH] > 0.5f ) ) { mix[i] = 0; }
+		if ( i == MOTOR_FR && ( rx[ROLL] < -0.5f || rx[PITCH] < -0.5f ) ) { mix[i] = 0; }
+		if ( i == MOTOR_BR && ( rx[ROLL] < -0.5f || rx[PITCH] > 0.5f ) ) { mix[i] = 0; }
+		#if defined(MOTORS_TO_THROTTLE_MODE) && !defined(MOTORS_TO_THROTTLE)
+		}
+		#endif
+
 		// flash leds in valid throttle range
+		#ifdef MOTORS_TO_THROTTLE
 		ledcommand = 1;
 		#warning "MOTORS TEST MODE"
+		#endif
 		#endif
 
 		#ifdef MOTOR_MIN_ENABLE
@@ -714,13 +731,13 @@ thrsum = 0;
         // level mode calculations done after to reduce latency
         // the 1ms extra latency should not affect cascaded pids significantly
         
-      	extern void stick_vector( float);
+      	extern void stick_vector( float rx_input[] , float maxangle);
 		extern float errorvect[]; // level mode angle error calculated by stick_vector.c					
         extern float GEstG[3]; // gravity vector for yaw feedforward
         float yawerror[3] = {0}; // yaw rotation vector
 
         // calculate roll / pitch error
-		stick_vector( 0 ); 
+		stick_vector( rxcopy , 0 ); 
            
         float yawrate = rxcopy[2] * (float) MAX_RATEYAW * DEGTORAD;            
         // apply yaw from the top of the quad            
@@ -731,8 +748,7 @@ thrsum = 0;
         // pitch and roll
 		for ( int i = 0 ; i <=1; i++)
 			{
-            lpf( &angleerror[i] , errorvect[i] , FILTERCALC( LOOPTIME , 20000) );
-                
+            angleerror[i] = errorvect[i] ;    
 			error[i] = apid(i) + yawerror[i] - gyro[i];
 			}
         // yaw

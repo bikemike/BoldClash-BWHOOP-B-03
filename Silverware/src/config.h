@@ -76,8 +76,8 @@
 //#define SOFT_LPF_4TH_088HZ
 //#define SOFT_LPF_4TH_160HZ
 //#define SOFT_LPF_4TH_250HZ
-//#define SOFT_LPF_1ST_HZ 100
-#define SOFT_LPF_2ST_HZ 100
+#define SOFT_LPF_1ST_HZ 100
+//#define SOFT_LPF_2ST_HZ 100
 //#define SOFT_LPF_NONE
 
 
@@ -126,7 +126,7 @@
 // motorfilter1: hanning 3 sample fir filter
 // motorfilter2: 1st lpf, 0.2 - 0.6 , 0.6 = less filtering
 //#define MOTOR_FILTER
-//#define MOTOR_FILTER2_ALPHA 0.3
+#define MOTOR_FILTER2_ALPHA 0.3
 
 // clip feedforward attempts to resolve issues that occur near full throttle
 //#define CLIP_FF
@@ -147,7 +147,7 @@
 #define BOLDCLASH_716MM_24K
 
 // a filter which makes throttle feel faster
-//#define THROTTLE_TRANSIENT_COMPENSATION
+//#define THROTTLE_TRANSIENT_COMPENSATION 
 
 //throttle feedback from accelerometer
 //#define THROTTLE_SMOOTH
@@ -179,6 +179,7 @@
 //#define RX_BAYANG_PROTOCOL_BLE_BEACON
 //#define RX_BAYANG_BLE_APP
 //#define RX_CX10BLUE_PROTOCOL
+//#define RX_SBUS
 
 // 0 - 7 - power for telemetry
 #define TX_POWER 7
@@ -231,6 +232,10 @@
 
 // throttle direct to motors for thrust measure
 // #define MOTORS_TO_THROTTLE
+
+// throttle direct to motors for thrust measure as a flight mode
+//#define MOTORS_TO_THROTTLE_MODE MULTI_CHAN_8
+
 
 // loop time in uS
 // this affects soft gyro lpf frequency if used
