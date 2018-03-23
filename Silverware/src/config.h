@@ -8,21 +8,21 @@
 // for acro mode
 #define MAX_RATE 360.0
 #define MAX_RATEYAW 360.0
+// use if your tx has no expo function
+// 0.00 to 1.00 , 0 = no exp
+// positive = less sensitive near center 
+#define ACRO_EXPO_XY 0.0
+#define ACRO_EXPO_YAW 0.0
+
+
 
 // max angle for level mode
-#define MAX_ANGLE_HI 70.0f
+#define LEVEL_MAX_ANGLE 70.0f
+#define EXPO_XY 0.0
+#define EXPO_YAW 0.0
 
 #define LOW_RATES_MULTI 0.5f
 
-// disable inbuilt expo functions
-#define DISABLE_EXPO
-
-// use if your tx has no expo function
-// also comment out DISABLE_EXPO to use
-// 0.00 to 1.00 , 0 = no exp
-// positive = less sensitive near center 
-#define EXPO_XY 0.3
-#define EXPO_YAW 0.3
 
 
 
@@ -40,13 +40,13 @@
 // calculate above factor automatically
 #define AUTO_VDROP_FACTOR
 
-// voltage hysteresys
+// voltage hysteresis
 // in volts
 #define HYST 0.10
 
 
 
-// lower throttle when battery below treshold
+// lower throttle when battery below threshold
 //#define LVC_LOWER_THROTTLE
 #define LVC_LOWER_THROTTLE_VOLTAGE 3.30
 #define LVC_LOWER_THROTTLE_VOLTAGE_RAW 2.70
@@ -59,16 +59,11 @@
 // gyro filter 1 = 184hz delay 2.9mS
 // gyro filter 2 = 92hz delay 3.9mS
 // gyro filter 3 = 41hz delay 5.9mS (Default)
-// gyro filter 4 = 20hz
-// gyro filter 5 = 10hz
-// gyro filter 6 = 5hz
-// gyro filter 7 = 3600hz delay 0.17mS
 #define GYRO_LOW_PASS_FILTER 3
 
 
 // software gyro lpf ( iir )
 // set only one below
-//#define SOFT_LPF_1ST_023HZ
 //#define SOFT_LPF_1ST_043HZ
 //#define SOFT_LPF_1ST_100HZ
 //#define SOFT_LPF_2ND_043HZ
@@ -77,11 +72,14 @@
 //#define SOFT_LPF_4TH_160HZ
 //#define SOFT_LPF_4TH_250HZ
 #define SOFT_LPF_1ST_HZ 100
-//#define SOFT_LPF_2ST_HZ 100
+//#define SOFT_LPF_2ND_HZ 100
+//#define SOFT_KALMAN_GYRO KAL1_HZ_90
 //#define SOFT_LPF_NONE
 
-
-
+// transmitter type
+//#define USE_STOCK_TX
+#define USE_DEVO
+//#define USE_MULTI
 
 // switch function selection
 
@@ -89,7 +87,7 @@
 // CH_FLIP - flip,  CH_HEADFREE - headfree, CH_RTH - headingreturn
 // CH_EXPERT , CH_INV (inv h101 tx)
 // CH_RLL_TRIM , CH_PIT_TRIM - trim buttons pitch, roll
-
+// CH_EMG , CH_TO - boldclash stock tx
 
 // DEVO channels (bayang protocol)
 // DEVO_CHAN_5 - DEVO_CHAN_10
@@ -98,6 +96,8 @@
 
 // CH_ON - on always ( all protocols)
 // CH_OFF - off always ( all protocols)
+
+// CHAN_5 - CHAN_10 - auto based on tx selection
 
 // rates / expert mode
 #define RATES CH_EXPERT
@@ -112,12 +112,13 @@
 // comment out to disable
 //#define FPV_ON CH_ON
 
+
+// enable inverted flight code ( brushless only )
+//#define INVERTED_ENABLE
+//#define FN_INVERTED CH_OFF //for brushless only
+
 // aux1 channel starts on if this is defined, otherwise off.
 #define AUX1_START_ON
-
-// improves reception and enables trims if used
-// trims are incompatible with DEVO TX when used
-//#define USE_STOCK_TX
 
 // automatically remove center bias ( needs throttle off for 1 second )
 //#define STOCK_TX_AUTOCENTER
@@ -127,6 +128,7 @@
 // motorfilter2: 1st lpf, 0.2 - 0.6 , 0.6 = less filtering
 //#define MOTOR_FILTER
 #define MOTOR_FILTER2_ALPHA 0.3
+//#define MOTOR_KAL KAL1_HZ_70
 
 // clip feedforward attempts to resolve issues that occur near full throttle
 //#define CLIP_FF
@@ -148,9 +150,7 @@
 
 // a filter which makes throttle feel faster
 //#define THROTTLE_TRANSIENT_COMPENSATION 
-
-//throttle feedback from accelerometer
-//#define THROTTLE_SMOOTH
+#define THROTTLE_TRANSIENT_COMPENSATION_FACTOR 7.0 
 
 // lost quad beeps using motors (30 sec timeout)
 //#define MOTOR_BEEPS
@@ -170,16 +170,14 @@
 
 // Radio protocol selection
 // select only one
-//#define RX_CG023_PROTOCOL
-//#define RX_H7_PROTOCOL
-//#define RX_BAYANG_PROTOCOL
+
 //#define RX_BAYANG_PROTOCOL_TELEMETRY
+//#define RX_NRF24_BAYANG_TELEMETRY
+//#define RX_BAYANG_BLE_APP
+//#define RX_SBUS
 #define RX_BAYANG_BIKEMIKE_TELEM
 #define RX_TELEMETRY_BIKEMIKE
-//#define RX_BAYANG_PROTOCOL_BLE_BEACON
-//#define RX_BAYANG_BLE_APP
-//#define RX_CX10BLUE_PROTOCOL
-//#define RX_SBUS
+
 
 // 0 - 7 - power for telemetry
 #define TX_POWER 7

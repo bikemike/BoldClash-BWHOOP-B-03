@@ -285,7 +285,7 @@ filter_lpf1 filter[3];
 
 
 
-#ifdef SOFT_LPF_2ST_HZ
+#ifdef SOFT_LPF_2ND_HZ
 
 extern "C" float lpfcalc( float sampleperiod , float filtertime);
 extern "C" float lpfcalc_hz(float sampleperiod, float filterhz);
@@ -293,12 +293,12 @@ extern "C" void lpf( float *out, float in , float coeff);
 
 extern float looptime;
 
-float alpha = 0.0;
-float two_one_minus_alpha = 2.0;
-float one_minus_alpha_sqr = 1.0;
-float alpha_sqr = 0.0;
+static float alpha = 0.0;
+static float two_one_minus_alpha = 2.0;
+static float one_minus_alpha_sqr = 1.0;
+static float alpha_sqr = 0.0;
 
-float looptime_filt = 0.001;
+static float looptime_filt = 0.001;
 
 class  filter_lpf2
 {
@@ -329,7 +329,7 @@ void  lpf_coeff_2nd()
  
   lpf ( &looptime_filt , looptime , 0.96);
   
-   float one_minus_alpha = FILTERCALC( looptime_filt , (1.0f/SOFT_LPF_2ST_HZ) );  
+   float one_minus_alpha = FILTERCALC( looptime_filt , (1.0f/SOFT_LPF_2ND_HZ) );  
     
    one_minus_alpha_sqr = one_minus_alpha * one_minus_alpha;
    
@@ -344,6 +344,45 @@ filter_lpf2 filter[3];
 #endif
 
 
+#ifdef SOFT_KALMAN_GYRO
+class  filter_kalman
+{
+    private:
+        float x_est_last ;
+        float P_last ; 
+        float Q;
+        float R;
+    public:
+        filter_kalman()
+        {
+            Q = 0.02; 
+            R = 0.1;
+
+            #ifdef SOFT_KALMAN_GYRO
+            R = Q/(float)SOFT_KALMAN_GYRO;
+            #endif
+        }
+        float  step( float in )   
+        {    
+
+            //do a prediction 
+            float x_temp_est = x_est_last; 
+            float P_temp = P_last + Q; 
+
+            float K = P_temp * (1.0f/(P_temp + R));
+            float x_est = x_temp_est + K * (in - x_temp_est);  
+            float P = (1- K) * P_temp; 
+           
+            //update our last's 
+            P_last= P; 
+            x_est_last = x_est; 
+
+            return x_est;
+        }
+};       
+filter_kalman filter[3];       
+#endif
+
 
 extern "C" float lpffilter( float in,int num )
 {
@@ -355,7 +394,7 @@ extern "C" float lpffilter( float in,int num )
     if ( num == 0 ) lpf_coeff();
     #endif
     
-    #ifdef SOFT_LPF_2ST_HZ
+    #ifdef SOFT_LPF_2ND_HZ
     if ( num == 0 ) lpf_coeff_2nd();
     #endif
     

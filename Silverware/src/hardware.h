@@ -23,7 +23,7 @@
 // 2 - low battery at powerup - if enabled by config.h "#define STOP_LOWBATTERY" 
 // 3 - radio chip not found
 // 4 - Gyro not found - maybe i2c speed
-// 5 - clock , intterrupts , systick - this should not come up
+// 5 - clock , intterrupts , systick , gcc bad code , bad memory access (code issues like bad pointers)- this should not come up
 // 6 - loop time issue - if loop time exceeds 20mS
 // 7 - i2c error  - triggered by hardware i2c driver only
 // 8 - i2c error main loop  - triggered by hardware i2c driver only
@@ -57,6 +57,9 @@
 //#define USE_HARDWARE_I2C
 #define USE_SOFTWARE_I2C
 //#define USE_DUMMY_I2C
+
+// for boards without a SCL pullup - E011 ( nonstandard i2c )
+//#define SOFTI2C_PUSHPULL_CLK
 
 // I2C speed: fast = no delays 
 // slow1 = for i2c without pull-up resistors
@@ -122,7 +125,6 @@
 // change this factor to get a correct battery voltage
 #define ADC_SCALEFACTOR 0.001364
 
-#define ADC_VREF_SCALE
 
 // SPI PINS DEFINITONS ( for radio ic )
 // MOSI , CLK , SS - outputs , MISO input
@@ -155,10 +157,11 @@
 
 
 // PWM PINS DEFINITIONS 
-// currently pins PA0 to PA3 , PA5 , PA8 to PA11 supported
+
 
 // pwm driver = brushed motors
 // esc driver = servo type signal for brushless esc
+// pins PA0 - PA11 , PB0 , PB1
 
 //**DO NOT ENABLE ESC DRIVER WITH BRUSHED MOTORS ATTACHED**
 
@@ -190,78 +193,20 @@
 
 // Assingment of pin to motor
 // Assign one pin to one motor
+// pins PA0 - PA11 , PB0 , PB1
 
-// back-left motor
-// motor 0 pin
-
-//#define MOTOR0_PIN_PA0
-//#define MOTOR0_PIN_PA1
-//#define MOTOR0_PIN_PA2
-//#define MOTOR0_PIN_PA3
-//#define MOTOR0_PIN_PA4
-//#define MOTOR0_PIN_PA5
-//#define MOTOR0_PIN_PA6
-//#define MOTOR0_PIN_PA7
-//#define MOTOR0_PIN_PA8
-//#define MOTOR0_PIN_PA9
-//#define MOTOR0_PIN_PA10
-//#define MOTOR0_PIN_PA11
-//#define MOTOR0_PIN_PB0
+// back-left motor ( motor 0 )
 #define MOTOR0_PIN_PB1
 
-// front-left motor
-// motor 1 pin
-
-//#define MOTOR1_PIN_PA0
-//#define MOTOR1_PIN_PA1
-//#define MOTOR1_PIN_PA2
-//#define MOTOR1_PIN_PA3
+// front-left motor ( motor 1 )
 #define MOTOR1_PIN_PA4
-//#define MOTOR1_PIN_PA5
-//#define MOTOR1_PIN_PA6
-//#define MOTOR1_PIN_PA7
-//#define MOTOR1_PIN_PA8
-//#define MOTOR1_PIN_PA9
-//#define MOTOR1_PIN_PA10
-//#define MOTOR1_PIN_PA11
-//#define MOTOR1_PIN_PB0
-//#define MOTOR1_PIN_PB1
 
-// back-right motor
-// motor 2 pin
-
-//#define MOTOR2_PIN_PA0
-//#define MOTOR2_PIN_PA1
-//#define MOTOR2_PIN_PA2
-//#define MOTOR2_PIN_PA3
-//#define MOTOR2_PIN_PA4
-//#define MOTOR2_PIN_PA5
+// back-right motor ( motor 2 )
 #define MOTOR2_PIN_PA6
-//#define MOTOR2_PIN_PA7
-//#define MOTOR2_PIN_PA8
-//#define MOTOR2_PIN_PA9
-//#define MOTOR2_PIN_PA10
-//#define MOTOR2_PIN_PA11
-//#define MOTOR2_PIN_PB0
-//#define MOTOR2_PIN_PB1
 
-// front-right motor
-// motor 3 pin
-
-//#define MOTOR3_PIN_PA0
-//#define MOTOR3_PIN_PA1
-//#define MOTOR3_PIN_PA2
-//#define MOTOR3_PIN_PA3
-//#define MOTOR3_PIN_PA4
-//#define MOTOR3_PIN_PA5
-//#define MOTOR3_PIN_PA6
+// front-right motor ( motor 3 )
 #define MOTOR3_PIN_PA7
-//#define MOTOR3_PIN_PA8
-//#define MOTOR3_PIN_PA9
-//#define MOTOR3_PIN_PA10
-//#define MOTOR3_PIN_PA11
-//#define MOTOR3_PIN_PB0
-//#define MOTOR3_PIN_PB1
+
 
 
 

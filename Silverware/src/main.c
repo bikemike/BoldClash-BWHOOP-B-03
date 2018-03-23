@@ -50,7 +50,7 @@ THE SOFTWARE.
 #include "drv_serial.h"
 #include "buzzer.h"
 #include "drv_fmc2.h"
-
+#include "gestures.h"
 #include "binary.h"
 
 #include <stdio.h>
@@ -59,10 +59,8 @@ THE SOFTWARE.
 
 
 
-#ifdef __GNUC__
-#ifndef SOFT_LPF_NONE
+#if defined (__GNUC__)&& !( defined (SOFT_LPF_NONE) || defined (SOFT_LPF_1ST_HZ) || defined (SOFT_LPF_2ST_HZ) )
 #warning the soft lpf may not work correctly with gcc due to longer loop time
-#endif
 #endif
 
 
@@ -113,6 +111,7 @@ extern int rxmode;
 // failsafe on / off
 extern int failsafe;
 extern float hardcoded_pid_identifier;
+extern int onground;
 
 // for led flash on gestures
 int ledcommand = 0;
@@ -172,6 +171,16 @@ aux[CH_ON] = 1;
 #ifdef AUX1_START_ON
 aux[CH_AUX1] = 1;
 #endif
+    
+    
+#ifdef FLASH_SAVE1
+// read pid identifier for values in file pid.c
+    flash_hard_coded_pid_identifier();
+
+// load flash saved variables
+    flash_load( );
+#endif
+    
 	rx_init();
 
 	
@@ -210,7 +219,7 @@ serial_init();
 
 
 
-	imu_init();
+imu_init();
 
 #ifdef FLASH_SAVE2
 // read accelerometer calibration values from option bytes ( 2* 8bit)
@@ -219,13 +228,6 @@ extern float accelcal[3];
  accelcal[1] = flash2_readdata( OB->DATA1 ) - 127;
 #endif
 
-#ifdef FLASH_SAVE1
-// read pid identifier for values in file pid.c
-    flash_hard_coded_pid_identifier();
-
-// load flash saved variables
-    flash_load( );
-#endif
 
 extern int liberror;
 if ( liberror ) 
@@ -316,13 +318,11 @@ if ( liberror )
       
 // battery low logic
 
-#ifdef ADC_VREF_SCALE
-        // account for vcc changes
+        // read acd and scale based on processor voltage
 		float battadc = adc_read(0)*vreffilt; 
+        // read and filter internal reference
         lpf ( &vreffilt , adc_read(1)  , 0.9968f);	
-#else
-        float battadc = adc_read(0); 
-#endif        
+  
 		
 
 		// average of all 4 motor thrusts
@@ -413,64 +413,77 @@ if( thrfilt > 0.1f )
 #ifdef DEBUG
 	debug.vbatt_comp = vbatt_comp ;
 #endif		
-	
-
-#if ( LED_NUMBER > 0)
-// led flash logic	
-if ( lowbatt )
-	ledflash ( 500000 , 8);
-else
-{
-		if ( rxmode == RXMODE_BIND)
-		{// bind mode
-		ledflash ( 100000, 12);
-		}else
-		{// non bind
-			if ( failsafe) 
-				{
-					ledflash ( 500000, 15);			
-				}
-			else 
-			{
-			
-				if (ledcommand)
-						  {
-							  if (!ledcommandtime)
-								  ledcommandtime = gettime();
-							  if (gettime() - ledcommandtime > 500000)
-							    {
-								    ledcommand = 0;
-								    ledcommandtime = 0;
-							    }
-							  ledflash(100000, 8);
-						  }
-               	#ifndef DISABLE_GESTURES2
-						else if (ledblink)
-						{
-							if (!ledcommandtime)
-								  ledcommandtime = gettime();
-							if (gettime() - ledcommandtime > 500000)
-							    {
-								    ledblink--;
-								    ledcommandtime = 0;
-							    }
-							ledflash(500000, 3);
-						}
-						else
-					#endif // end gesture led flash
-				if ( aux[LEDS_ON] )
-				#if( LED_BRIGHTNESS != 15)	
-				led_pwm(LED_BRIGHTNESS);
-				#else
-				ledon( 255);
-				#endif
-				else 
-				ledoff( 255);
-			}
-		} 		
-		
+// check gestures
+    if ( onground )
+	{
+	 gestures( );
 	}
-#endif
+
+        
+
+
+if ( LED_NUMBER > 0)
+{
+// led flash logic	
+    if ( lowbatt )
+        ledflash ( 500000 , 8);
+    else
+    {
+        if ( rxmode == RXMODE_BIND)
+        {// bind mode
+            ledflash ( 100000, 12);
+        }else
+        {// non bind
+            if ( failsafe) 
+                {
+                    ledflash ( 500000, 15);			
+                }
+            else 
+            {
+                int leds_on = aux[LEDS_ON];
+                if (ledcommand)
+                {
+                    if (!ledcommandtime)
+                      ledcommandtime = gettime();
+                    if (gettime() - ledcommandtime > 500000)
+                    {
+                        ledcommand = 0;
+                        ledcommandtime = 0;
+                    }
+                    ledflash(100000, 8);
+                }
+                else if (ledblink)
+                {
+                    unsigned long time = gettime();
+                    if (!ledcommandtime)
+                    {
+                        ledcommandtime = time;
+                        if ( leds_on) ledoff(255);
+                        else ledon(255); 
+                    }
+                    if ( time - ledcommandtime > 500000)
+                    {
+                        ledblink--;
+                        ledcommandtime = 0;
+                    }
+                     if ( time - ledcommandtime > 300000)
+                    {
+                        if ( leds_on) ledon(255);
+                        else  ledoff(255);
+                    }
+                }
+                else if ( leds_on )
+                {
+                    if ( LED_BRIGHTNESS != 15)	
+                    led_pwm(LED_BRIGHTNESS);
+                    else ledon(255);
+                }
+                else ledoff(255);
+            }
+        } 		       
+    }
+}
+
 
 
 #if ( RGB_LED_NUMBER > 0)

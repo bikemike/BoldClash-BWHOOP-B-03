@@ -51,7 +51,6 @@ extern float attitude[3];
 
 int onground = 1;
 int onground_long = 1;
-int pid_gestures_used = 0;
 
 float thrsum;
 
@@ -108,8 +107,14 @@ float rate_multiplier = 1.0;
 	}
 	// make local copy
 	
-
 	
+#ifdef INVERTED_ENABLE	
+    extern int pwmdir;
+	if ( aux[FN_INVERTED]  )		
+        pwmdir = REVERSE;
+    else
+        pwmdir = FORWARD;    
+#endif	
 	
 	for ( int i = 0 ; i < 3 ; i++)
 	{
@@ -138,88 +143,7 @@ float rate_multiplier = 1.0;
 	}
 #endif	
 	
-	// check for accelerometer calibration command
-	if ( onground )
-	{
-		#ifndef DISABLE_GESTURES2
-		int command = gestures2();
 
-		if (command!=GESTURE_NONE)
-        {
-            if (command == GESTURE_DDD)
-		    {
-			                  
-                //skip accel calibration if pid gestures used
-                if ( !pid_gestures_used )
-                {
-                    gyro_cal();	// for flashing lights
-                    acc_cal();                   
-                }
-                else
-                {
-                    ledcommand = 1;
-                    pid_gestures_used = 0;
-                }
-                #ifdef FLASH_SAVE2
-                extern float accelcal[3];
-                flash2_fmc_write( accelcal[0] + 127 , accelcal[1] + 127);
-                #endif
-                
-                #ifdef FLASH_SAVE1
-			    extern void flash_save( void);
-                extern void flash_load( void);
-                flash_save( );
-                flash_load( );
-                #endif
-			    // reset loop time 
-			    extern unsigned long lastlooptime;
-			    lastlooptime = gettime();
-		    }		
-
-            if (command == GESTURE_RRD)
-              {
-                  aux[CH_AUX1] = 1;
-                  ledcommand = 1;
-              }
-            if (command == GESTURE_LLD)
-              {
-                  ledcommand = 1;
-                  aux[CH_AUX1] = 0;
-              }
-            #ifdef PID_GESTURE_TUNING              
-            if ( command >= GESTURE_UDR ) pid_gestures_used = 1;   
-              
-           // int blink = 0;
-            if (command == GESTURE_UDU)
-              {
-                        // Cycle to next pid term (P I D)
-                        ledblink = next_pid_term();
-              }
-            if (command == GESTURE_UDD)
-              {
-                        // Cycle to next axis (Roll Pitch Yaw)
-                        ledblink = next_pid_axis();
-              }
-            if (command == GESTURE_UDR)
-              {
-                  // Increase by 10%
-                        ledblink = increase_pid();
-              }
-            if (command == GESTURE_UDL)
-              {
-                        // Descrease by 10%
-                  ledblink = decrease_pid();
-              }
-                // U D U - Next PID term
-                // U D D - Next PID Axis
-                // U D R - Increase value
-                // U D L - Descrease value
-               // ledblink = blink; //Will cause led logic to blink the number of times ledblink has stored in it.
-                #endif
-
-	  }
-		#endif		
-	}
 
 
 if (NULL != idle_cb)
@@ -364,62 +288,6 @@ extern float throttlehpf( float in );
 		    }
 #endif
 	
-
-//#define THROTTLE_SMOOTH
-            
-#ifdef THROTTLE_SMOOTH
-// throttle smooth function is adding feedback from accelerometer to throttle
-#define THROTTLE_SMOOTH_FACTOR 0.002 // feedback amount
-#define THROTTLE_SMOOTH_CENTER_ONLY // active around center only
-{            
-static float accelz_lpf;
-static float accel_integral;
-            
-static float accel_integral_bias;
-static float accel_integral_filt;
-static float g2_filt = 0.0;
-
-extern float looptime;
-extern float GEstG[3];
-extern float accelz;
-extern float accel[3];
-
-// calculate integral of z axis accel
-// some filters added to prevent runaway
-
-//excess acceleration in z axis    
-float g2 = accelz - GEstG[2];
-
-// remove bias from accelerometer imperfections
-float accelz_adj = ( g2 - g2_filt);
-// a lpf to remove more biases
-lpf( &accelz_lpf , accelz_adj , 0.99998);
-// bias calibration if on ground
-if (onground)  lpf( &g2_filt , g2 , 0.998); 	
-
-if (g2_filt < -0.10f ) g2_filt = -0.10f;
-if (g2_filt > 0.10f ) g2_filt = 0.10f;
-// remove the lpf component to make a hpf	
- accelz_adj -= accelz_lpf;
-// actual integration of filtered accel    
- accel_integral -= accelz_adj*looptime*1000.0f;
-// why not filter the integral too?
-lpf(&accel_integral_bias,accel_integral , 0.998); 
-accel_integral_filt = accel_integral - accel_integral_bias;
-// a limit just in case something goes really wrong, so we still have some throttle
-limitf( &accel_integral_filt , 0.3f/(float) THROTTLE_SMOOTH_FACTOR );
-
-#ifdef THROTTLE_SMOOTH_CENTER_ONLY
-//100% at center - 0% at max/min
-float thr_gain = (1.0f - 2.0f*fabs(throttle - 0.5f));
-#else
-//100% full range
-const float thr_gain = 1.0;
-#endif
-// add accel integral ( which is vertical speed) to throttle 
-throttle += (float) THROTTLE_SMOOTH_FACTOR * thr_gain * accel_integral_filt;
-}
-#endif
             
             
 #ifdef LVC_LOWER_THROTTLE
@@ -454,12 +322,29 @@ throttle -= throttle_p + throttle_i;
 #ifdef INVERT_YAW_PID
 pidoutput[2] = -pidoutput[2];			
 #endif
+	
+#ifdef INVERTED_ENABLE
+if (pwmdir == REVERSE)
+		{
+			// inverted flight
 		
+		mix[MOTOR_FR] = throttle + pidoutput[ROLL] + pidoutput[PITCH] - pidoutput[YAW];		// FR
+		mix[MOTOR_FL] = throttle - pidoutput[ROLL] + pidoutput[PITCH] + pidoutput[YAW];		// FL	
+		mix[MOTOR_BR] = throttle + pidoutput[ROLL] - pidoutput[PITCH] + pidoutput[YAW];		// BR
+		mix[MOTOR_BL] = throttle - pidoutput[ROLL] - pidoutput[PITCH] - pidoutput[YAW];		// BL	
+		
+
+		}	
+else
+#endif    
+{
+    // normal mixer
 		mix[MOTOR_FR] = throttle - pidoutput[ROLL] - pidoutput[PITCH] + pidoutput[YAW];		// FR
 		mix[MOTOR_FL] = throttle + pidoutput[ROLL] - pidoutput[PITCH] - pidoutput[YAW];		// FL	
 		mix[MOTOR_BR] = throttle - pidoutput[ROLL] + pidoutput[PITCH] - pidoutput[YAW];		// BR
 		mix[MOTOR_BL] = throttle + pidoutput[ROLL] + pidoutput[PITCH] + pidoutput[YAW];		// BL	
-		
+}
+
 #ifdef INVERT_YAW_PID
 // we invert again cause it's used by the pid internally (for limit)
 pidoutput[2] = -pidoutput[2];			
@@ -474,7 +359,13 @@ pidoutput[2] = -pidoutput[2];
         #ifdef MOTOR_FILTER2_ALPHA	
         float motorlpf( float in , int x) ;           
 		mix[i] = motorlpf(  mix[i] , i);
-		#endif	
+		#endif
+
+		#ifdef MOTOR_KAL
+      		float motor_kalman( float in , int x);
+       		mix[i] = motor_kalman(  mix[i] , i);  
+       	#endif 
+	
         }
 
 
@@ -824,3 +715,41 @@ float clip_ff(float motorin, int number)
 }
 
 
+
+    //initial values for the kalman filter 
+    float x_est_last[4] ;
+    float P_last[4] ; 
+    //the noise in the system 
+    const float Q = 0.02;
+//the noise in the system ( variance -  squared )
+   
+    #ifdef MOTOR_KAL
+    const float R = Q/(float)MOTOR_KAL;
+    #else
+    float R = 0.1;
+    #endif
+
+float  motor_kalman( float in , int x)   
+{    
+
+
+    
+        //do a prediction 
+       float x_temp_est = x_est_last[x]; 
+       float P_temp = P_last[x] + Q; 
+
+       float K = P_temp * (1.0f/(P_temp + R));
+       float x_est = x_temp_est + K * (in - x_temp_est);  
+       float P = (1- K) * P_temp; 
+       
+        //update our last's 
+        P_last[x] = P; 
+        x_est_last[x] = x_est; 
+//
+
+return x_est;
+}	
+	
+	
+	
+	
