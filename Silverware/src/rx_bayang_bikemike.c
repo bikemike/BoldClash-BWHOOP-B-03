@@ -127,6 +127,9 @@ void writeregs ( uint8_t data[] , uint8_t size )
 void rx_init()
 {
 
+	spi_cs1off();
+	spi_cs2off();
+
 
 	// always on (CH_ON) channel set 1
 	aux[AUXNUMBER - 2] = 1;

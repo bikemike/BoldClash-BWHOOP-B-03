@@ -26,6 +26,9 @@ void spi_init(void)
 	
 	GPIO_InitStructure.GPIO_Pin = SPI_SS_PIN;
 	GPIO_Init(SPI_SS_PORT, &GPIO_InitStructure);
+
+	GPIO_InitStructure.GPIO_Pin = SPI_SS2_PIN;
+	GPIO_Init(SPI_SS2_PORT, &GPIO_InitStructure);
 	
 		
   mosi_init_struct.GPIO_Pin = SPI_MOSI_PIN;
@@ -84,12 +87,32 @@ void mosi_output( void)
 
 void spi_cson( )
 {
+	//spi_cs1on();
+	spi_cs2on();
+}
+void spi_csoff( )
+{
+	//spi_cs1off();
+	spi_cs2off();
+}
+
+void spi_cs1on( )
+{
 	SPI_SS_PORT->BRR = SPI_SS_PIN;
 }
 
-void spi_csoff( )
+void spi_cs1off( )
 {
 	SPI_SS_PORT->BSRR = SPI_SS_PIN;
+}
+void spi_cs2on( )
+{
+	SPI_SS2_PORT->BRR = SPI_SS2_PIN;
+}
+
+void spi_cs2off( )
+{
+	SPI_SS2_PORT->BSRR = SPI_SS2_PIN;
 }
 
 

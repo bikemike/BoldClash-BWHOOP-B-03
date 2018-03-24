@@ -136,7 +136,6 @@ clk_init();
 	
   gpio_init();	
 	
-	spi_init();
 	
   time_init();
 
@@ -180,7 +179,16 @@ aux[CH_AUX1] = 1;
 // load flash saved variables
     flash_load( );
 #endif
+
+    	// delay before calling rxinit
+    	{
+	unsigned long time = gettime(); 
+	time += 5000000UL;
+	while (time > gettime()) ;
+	}
     
+	spi_init();
+	delay(100000);
 	rx_init();
 
 	
